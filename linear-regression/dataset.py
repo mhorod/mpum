@@ -36,15 +36,15 @@ def load_data(path):
         return Dataset(xs, ys)
 
 
-def standardized(xs):
+def normalized(xs):
     mean = np.mean(xs, axis=0)
     std = np.std(xs, axis=0)
     return (xs - mean) / std, mean, std
 
 
-def standarize(ds):
-    ds.xs, xs_mean, xs_std = standardized(ds.xs)
-    ds.ys, ys_mean, ys_std = standardized(ds.ys)
+def normalize(ds):
+    ds.xs, xs_mean, xs_std = normalized(ds.xs)
+    ds.ys, ys_mean, ys_std = normalized(ds.ys)
     return (xs_mean, xs_std), (ys_mean, ys_std)
 
 
