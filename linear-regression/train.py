@@ -2,46 +2,48 @@ import numpy as np
 
 from dataset import *
 from loss import *
-from base_functions import *
 from gradient_descent import *
 from plots import *
 from predictor import *
-
+from models import *
 
 ds = load_data("dane.data")
 ds.shuffle()
 normalization = normalize(ds)
 
+model = make_simplest_model()
 
-projs = projections(7) + [Mean()]
-polys = polynomials(4)
+prepared_ds = model.prepare_dataset(ds)
 
-base_polys = [Composition(proj, poly) for proj in projs for poly in polys]
-base_polys += [Mul(f, g) for f in base_polys for g in base_polys]
+train_ds, val_ds, test_ds = split(prepared_ds, 0.2, 0.1)
 
-base_functions = [Const(1)] + base_polys  # + base_trigs + base_misc
+params = DescentParams(
+    model,
+    train_ds,
+    val_ds,
+    batch_size=50,
+    epochs=1000,
+    learning_rate=0.0001,
+)
 
-theta = np.random.default_rng().random(len(base_functions))
+history = continuous_gradient_descent(params)
 
-print("Number of base functions: ", len(base_functions))
-xs = np.array([[f(x) for f in base_functions] for x in ds.xs])
-ys = ds.ys
+print("Train loss:", model.evaluate(train_ds))
+print("Val loss:", model.evaluate(val_ds))
+print("Test loss:", model.evaluate(test_ds))
+'''
+marked_percentages = [0.01, 0.02, 0.03, 0.125, 0.625, 1]
+percentages = sorted(set(
+    [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] + marked_percentages))
 
-based_ds = Dataset(xs, ys)
-
-train_ds, val_ds, test_ds = split(based_ds, 0.2, 0.1)
-loss = MSE()
-
-model = make_model(loss, 0.0001, 1000, 50)
-
-theta, history = model(train_ds, val_ds)
-
-print("Train loss:", loss(theta, train_ds))
-print("Val loss:", loss(theta, val_ds))
-print("Test loss:", loss(theta, test_ds))
+marked_percentages = [percentages.index(p) for p in marked_percentages]
+curve = make_average_learning_curve(train_ds, test_ds, percentages, 10, params)
+plot_learning_curve(percentages, curve, marked_percentages)
+'''
 
 plot_train_history(history)
-plot_error(ds.xs, xs @ theta - ys)
+plot_by_x(ds.xs, prepared_ds.xs @ model.theta - prepared_ds.ys)
 
-predictor = Predictor(normalization, theta, base_functions)
-export_predictor(predictor, "predictor.model")
+
+#predictor = Predictor(normalization, theta, base_functions)
+#export_predictor(predictor, "predictor.model")

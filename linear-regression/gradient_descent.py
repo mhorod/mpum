@@ -2,42 +2,64 @@
 Gradient descent algorithm for linear regression.
 '''
 
+from dataclasses import dataclass
+
 import numpy as np
 from dataset import *
+from model import *
 
 
-def continuous_gradient_descent(loss, theta, train_ds, learning_rate, epochs, val_ds=None,
-                                batch_size=1):
+@dataclass
+class DescentParams:
+    model: Model
+    train_ds: Dataset
+    val_ds: Dataset
+    batch_size: int
+    epochs: int
+    learning_rate: float
+
+
+def continuous_gradient_descent(params: DescentParams):
     history = {
         'loss': [],
         'val_loss': [],
     }
 
-    for _ in range(epochs):
-        train_ds.shuffle()
-        for i in range(0, len(train_ds), batch_size):
-            batch = train_ds[i:i + batch_size]
-            grad = loss.gradient(theta, batch) * learning_rate
-            theta -= grad
+    for _ in range(params.epochs):
+        params.train_ds.shuffle()
+        for i in range(0, len(params.train_ds), params.batch_size):
+            batch = params.train_ds[i:i + params.batch_size]
+            grad = params.model.gradient(batch) * params.learning_rate
+            params.model.theta -= grad
 
-        history['loss'].append(loss(theta, train_ds))
-        if val_ds is not None:
-            history['val_loss'].append(loss(theta, val_ds))
+        history['loss'].append(params.model.evaluate(params.train_ds))
+        if params.val_ds is not None:
+            history['val_loss'].append(params.model.evaluate(params.val_ds))
 
-    return theta, history
+    return history
 
 
-def make_learning_curve(train_ds, percentages, model):
+def make_learning_curve(train_ds, test_ds, percentages, params: DescentParams):
     losses = []
     for p in percentages:
-        ds = train_ds[:int(len(train_ds) * p)]
-        _, history = model(ds)
-        losses.append(history['loss'][-1])
+        test_model = params.model.copy().randomize()
+        test_params = DescentParams(
+            test_model,
+            train_ds[:int(len(train_ds) * p)],
+            None,
+            params.batch_size,
+            params.epochs,
+            params.learning_rate,
+        )
+        continuous_gradient_descent(test_params)
+        loss = test_model.evaluate(test_ds)
+        losses.append(loss)
     return losses
 
 
-def make_model(loss, learning_rate, epochs, batch_size=1):
-    def model(train_ds, val_ds=None):
-        theta = np.random.default_rng().random(len(train_ds.xs[0]))
-        return continuous_gradient_descent(loss, theta, train_ds, learning_rate, epochs, val_ds, batch_size)
-    return model
+def make_average_learning_curve(train_ds, test_ds, percentages, attempts, params: DescentParams):
+    losses = [
+        make_learning_curve(train_ds, test_ds, percentages, params)
+        for _ in range(attempts)
+    ]
+    return np.mean(losses, axis=0)

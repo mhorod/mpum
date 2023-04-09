@@ -1,3 +1,7 @@
+'''
+Predictor -- basically a model but tailored for real data
+'''
+
 import numpy as np
 
 import pickle
@@ -17,12 +21,10 @@ class Predictor:
         ys = ys * self.y_std + self.y_mean
         return ys
 
+    def export(self, path):
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
 
-def export_predictor(predictor, path):
-    with open(path, 'wb') as f:
-        pickle.dump(predictor, f)
-
-
-def load_predictor(path):
-    with open(path, 'rb') as f:
-        return pickle.load(f)
+    def load(path):
+        with open(path, 'rb') as f:
+            return pickle.load(f)
