@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from dataset import *
+from regression.dataset import *
 
 
 class LossFunction(ABC):

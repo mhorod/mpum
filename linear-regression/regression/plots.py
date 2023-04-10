@@ -1,3 +1,7 @@
+'''
+Helper functions for plotting charts
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 

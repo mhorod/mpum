@@ -5,8 +5,8 @@ Gradient descent algorithm for linear regression.
 from dataclasses import dataclass
 
 import numpy as np
-from dataset import *
-from model import *
+from regression.dataset import *
+from regression.model import *
 
 
 @dataclass

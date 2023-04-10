@@ -1,6 +1,6 @@
 import numpy as np
 
-from dataset import *
+from regression.dataset import *
 
 
 class Model:

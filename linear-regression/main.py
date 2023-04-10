@@ -1,5 +1,5 @@
-from predictor import *
-from dataset import *
+from regression.predictor import *
+from regression.dataset import *
 
 
 def main():
