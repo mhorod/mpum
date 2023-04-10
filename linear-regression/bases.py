@@ -31,6 +31,18 @@ class Polynomial:
         return f"x ** {self.d}"
 
 
+class MutltiVarPolynomial:
+    def __init__(self, vars):
+        self.vars = vars
+
+    def __call__(self, x):
+        return np.prod([x[i] for i in self.vars])
+
+    def __repr__(self):
+        result = " * ".join([f"x[{i}]**{self.vars.count(i)}" for i in set(self.vars)])
+        return result or "1"
+
+
 def polynomials(n):
     '''
     Polynomials of degree 1 to n

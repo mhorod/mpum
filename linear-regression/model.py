@@ -27,7 +27,8 @@ class Model:
         return self.loss.gradient(self.theta, ds)
 
     def randomize(self):
-        self.theta = np.random.default_rng().random(self.features()) * 0.1 - 0.05
+        self.theta = np.random.default_rng().random(self.features()) * 2 - 1
+        self.theta *= 0.1
         return self
 
     def copy(self):

@@ -19,6 +19,23 @@ class DescentParams:
     learning_rate: float
 
 
+@dataclass
+class DescentMetaParams:
+    batch_size: int
+    epochs: int
+    learning_rate: float
+
+    def into_descent_params(self, model: Model, train_ds: Dataset, val_ds: Dataset):
+        return DescentParams(
+            model,
+            train_ds,
+            val_ds,
+            self.batch_size,
+            self.epochs,
+            self.learning_rate,
+        )
+
+
 def continuous_gradient_descent(params: DescentParams):
     history = {
         'loss': [],
@@ -39,9 +56,33 @@ def continuous_gradient_descent(params: DescentParams):
     return history
 
 
+def continuous_gradient_descent_with_momentum(params: DescentParams):
+    history = {
+        'loss': [],
+        'val_loss': [],
+    }
+
+    gs2 = 0
+    for _ in range(params.epochs):
+        params.train_ds.shuffle()
+        for i in range(0, len(params.train_ds), params.batch_size):
+            batch = params.train_ds[i:i + params.batch_size]
+            grad = params.model.gradient(batch)
+            gs2 = gs2 * 0.9 + 0.1 * grad ** 2
+            grad /= np.sqrt(gs2)
+            params.model.theta -= grad * params.learning_rate
+
+        history['loss'].append(params.model.evaluate(params.train_ds))
+        if params.val_ds is not None:
+            history['val_loss'].append(params.model.evaluate(params.val_ds))
+
+    return history
+
+
 def make_learning_curve(train_ds, test_ds, percentages, params: DescentParams):
     losses = []
     for p in percentages:
+        print(f"Training on {p * 100:.2f}% of data")
         test_model = params.model.copy().randomize()
         test_params = DescentParams(
             test_model,
