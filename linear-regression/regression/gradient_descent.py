@@ -79,6 +79,27 @@ def continuous_gradient_descent_with_momentum(params: DescentParams):
     return history
 
 
+def coordinate_gradient_descent(params: DescentParams):
+    history = {
+        'loss': [],
+        'val_loss': [],
+    }
+
+    for _ in range(params.epochs):
+        params.train_ds.shuffle()
+        j = np.random.randint(0, len(params.model.theta))
+        for i in range(0, len(params.train_ds), params.batch_size):
+            batch = params.train_ds[i:i + params.batch_size]
+            grad = params.model.gradient(batch) * params.learning_rate
+            params.model.theta[j] -= grad[j]
+
+        history['loss'].append(params.model.evaluate(params.train_ds))
+        if params.val_ds is not None:
+            history['val_loss'].append(params.model.evaluate(params.val_ds))
+
+    return history
+
+
 def make_learning_curve(train_ds, test_ds, percentages, params: DescentParams):
     losses = []
     for p in percentages:

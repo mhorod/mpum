@@ -2,7 +2,7 @@ from regression.predictor import *
 from regression.dataset import *
 
 
-def main():
+def print_mse():
     predictor = Predictor.load("predictor.model")
     ds = load_data("dane.data")
     ys = predictor(ds.xs)
@@ -10,5 +10,14 @@ def main():
     print("MSE:", mse)
 
 
+def predict_ys():
+    predictor = Predictor.load("predictor.model")
+    ds = load_data("dane.data")
+    ys = predictor(ds.xs)
+    for y in ys:
+        print(y)
+
+
 if __name__ == "__main__":
-    main()
+    predict_ys()
+    print_mse()

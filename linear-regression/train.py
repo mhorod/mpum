@@ -2,11 +2,14 @@
 Training concrete models for tests
 '''
 
-
 from regression import *
 
 import os
 import shutil
+
+ds = load_data("dane.data")
+ds.shuffle()
+normalization = normalize(ds)
 
 
 def print_loss(model, train_ds, val_ds, test_ds, model_name=None):
@@ -141,10 +144,52 @@ def calculate_simple_model_l2(l2):
     )
 
 
-ds = load_data("dane.data")
-ds.shuffle()
-normalization = normalize(ds)
+def calculate_simple_model_l1(l1):
+    simple_model_l1 = make_simple_model_l1(l1)
+    descent_meta_params = DescentMetaParams(
+        batch_size=50,
+        epochs=1000,
+        learning_rate=0.00001,
+    )
+
+    calculate_model(
+        simple_model_l1,
+        ds,
+        descent_meta_params,
+        coordinate_gradient_descent,
+        "simple-model-l1",
+    )
+
+
+def calculate_simple_model_elastic_net(l1, l2):
+    simple_model_elastic_net = make_simple_model_elastic_net(l1, l2)
+    descent_meta_params = DescentMetaParams(
+        batch_size=50,
+        epochs=1000,
+        learning_rate=0.00001,
+    )
+
+    calculate_model(
+        simple_model_elastic_net,
+        ds,
+        descent_meta_params,
+        coordinate_gradient_descent,
+        "simple-model-elastic-net",
+    )
+
+
+def export_best_predictor():
+    simple = make_simple_model()
+    prepared_ds = simple.prepare_dataset(ds)
+    simple_analytic_theta = analytic_mse(prepared_ds)
+    pred = Predictor(normalization, simple_analytic_theta,
+                     simple.base_functions)
+    pred.export("predictor.model")
+
 
 # calculate_simplest_model()
 # calculate_simple_model()
-calculate_simple_model_l2(0.001)
+# calculate_simple_model_l2(10 ** -4)
+# calculate_simple_model_l1(10 ** -4)
+# calculate_simple_model_elastic_net(10 ** -4, 10 ** -4)
+# export_best_predictor()

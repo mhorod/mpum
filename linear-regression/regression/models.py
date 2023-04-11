@@ -43,3 +43,15 @@ def make_simple_model_l2(l2):
     model = make_simple_model()
     model.loss = Sum(MSE(), L2(l2))
     return model
+
+
+def make_simple_model_l1(l1):
+    model = make_simple_model()
+    model.loss = Sum(MSE(), L1(l1))
+    return model
+
+
+def make_simple_model_elastic_net(l1, l2):
+    model = make_simple_model()
+    model.loss = Sum(MSE(), L1(l1), L2(l2))
+    return model

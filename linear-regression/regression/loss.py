@@ -34,26 +34,26 @@ class L1(LossFunction):
     def __init__(self, scale):
         self.scale = scale
 
-    def __call__(self, theta: np.ndarray, _: Dataset):
-        return self.scale * np.linalg.norm(theta[1:], ord=1)
+    def __call__(self, theta: np.ndarray, ds: Dataset):
+        return self.scale * np.linalg.norm(theta[1:], ord=1) / len(ds)
 
-    def gradient(self, theta, _: Dataset):
+    def gradient(self, theta, ds: Dataset):
         result = self.scale * np.sign(theta)
         result[0] = 0
-        return result
+        return result / len(ds)
 
 
 class L2(LossFunction):
     def __init__(self, scale):
         self.scale = scale
 
-    def __call__(self, theta: np.ndarray, _: Dataset):
-        return self.scale * np.linalg.norm(theta[1:], ord=2) ** 2
+    def __call__(self, theta: np.ndarray, ds: Dataset):
+        return self.scale * np.linalg.norm(theta[1:], ord=2) ** 2 / len(ds)
 
-    def gradient(self, theta, _: Dataset):
+    def gradient(self, theta, ds: Dataset):
         result = self.scale * 2 * theta
         result[0] = 0
-        return result
+        return result / len(ds)
 
 
 class Sum(LossFunction):
